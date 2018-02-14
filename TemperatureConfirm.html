@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Simple Meter</title>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="./reconnecting-websocket.min.js"></script>
+	
+	<script type="text/javascript">
+var wsUrl = 'ws://Temperature2018.mybluemix.net/ws/temperature';
+var socket;
+var temperatureData, humidityData;
+var temperatureOptions, humidityOptions;
+var temperatureGauge, humidityGauge;
+
+google.load("visualization", "1", {packages:["gauge"]});
+google.setOnLoadCallback(drawGauge);
+
+function connect() {
+	//socket = new WebSocket(wsUrl);
+	socket = new ReconnectingWebSocket(wsUrl);
+	
+	socket.onmessage = function(e) {
+		var sensorData = JSON.parse(e.data);
+		// console.log('sensorData= ' + e.data);          
+		update(sensorData);
+	};
+};
+
+function disconnect() {
+	socket.close();
+};
+
+function update(sensorData){
+	temperatureData.setValue(0, 1, sensorData.d.temp);
+	humidityData.setValue(0, 1, sensorData.d.humidity);
+	temperatureGauge.draw(temperatureData, temperatureOptions);
+	humidityGauge.draw(humidityData, humidityOptions);
+}
+
+function drawGauge() {
+	temperatureData = google.visualization.arrayToDataTable([
+		['Label', 'Value'],
+		['Temperature', 0]
+	]);
+
+	humidityData = google.visualization.arrayToDataTable([
+		['Label', 'Value'],
+		['Humidity', 0]
+	]);
+
+	temperatureOptions = {
+		width: 800, height: 240,
+		min: 0, max: 60,
+		redFrom: 50, redTo: 60,
+		yellowFrom:40, yellowTo: 50,
+		minorTicks: 5
+	};
+
+	humidityOptions = {
+		width: 800, height: 240,
+		min: 0, max: 100,
+		redFrom: 90, redTo: 100,
+		yellowFrom:75, yellowTo: 90,
+		minorTicks: 5
+	};
+
+	temperatureGauge = new google.visualization.Gauge(document.getElementById('temperatureGauge'));
+	humidityGauge = new google.visualization.Gauge(document.getElementById('humidityGauge'));
+
+	temperatureGauge.draw(temperatureData, temperatureOptions);
+	humidityGauge.draw(humidityData, humidityOptions);
+};
+
+	</script>
+</head>
+<body onLoad="connect()"style="font-size: 56px; font-family: helvetica; text-align: center; margin-top: 40px;">
+
+	<table>
+	    <tr>
+	        <td>
+        		<div id="temperatureGauge" style="height: 240px;"></div>
+    		</td>
+    		<td>
+		        <div id="humidityGauge" style="height: 240px;"></div>
+		    </td>  
+		</tr>
+	</table>
+</body>
+</html>
