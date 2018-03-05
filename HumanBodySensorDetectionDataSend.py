@@ -18,7 +18,7 @@ import spidev
 threshold = 40
 
 #サーバーへの送信間隔（秒）
-sendInterval = 1
+sendInterval = 5
 
 #初期処理
 def init():
