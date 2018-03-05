@@ -13,7 +13,7 @@ import json
 import datetime
 
 #サーバーへの送信間隔
-sendInterval = 5
+sendInterval = 30
 
 #モーションピンの番号
 motion_pin = 17
