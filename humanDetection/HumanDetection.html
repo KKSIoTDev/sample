@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Human Detection</title>
+	<script type="text/javascript" src="./js/reconnecting-websocket.min.js"></script>
+	<script type="text/javascript">
+        var wsUrl = 'ws://dht11test.mybluemix.net/ws/humanSensor';
+        var socket;
+        function connect() {
+	        socket = new ReconnectingWebSocket(wsUrl);
+        	socket.onmessage = function(e) {
+                var sensorData = JSON.parse(e.data);
+    	        console.log(sensorData.d.sensor);
+    	        //柏木さんがいる時～↑↑
+    	        if (sensorData.d.sensor == 1){
+    	            console.log(sensorData.d.sensor);
+    	            document.getElementById("exist_str").style.display="block";
+    	            document.getElementById("exist_img").style.display="block";
+    	            document.getElementById("noExist_str").style.display="none";
+    	            document.getElementById("noExist_img").style.display="none";
+    	        }else{
+    	            document.getElementById("exist_str").style.display="none";
+    	            document.getElementById("exist_img").style.display="none";
+    	            document.getElementById("noExist_str").style.display="block";
+    	            document.getElementById("noExist_img").style.display="block";
+    	        
+    	        }
+    	    };
+	    };
+    </script>
+</head>
+<body onLoad="connect()"style="font-size: 40px; font-family: helvetica; text-align: center; margin-top: 1px;">
+
+	<table>
+	    <tr>
+	        <td><div id="exist_str"   style="display:none">柏木さんがいる時～↑↑↑</div>
+                <div id="exist_img"   style="display:none"><img src="./png/smile.png"></div>
+                <div id="noExist_str" style="display:none">柏木さんがいない時～↓↓↓</div>
+                <div id="noExist_img" style="display:none"><img src="./png/sad.png" width="80%" height="80%"></div>
+           </td>
+        </tr>
+	</table>
+</body>
+</html>
