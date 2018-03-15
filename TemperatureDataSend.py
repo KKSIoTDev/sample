@@ -19,14 +19,14 @@ instance = dht11.DHT11(pin=4)
 
 #認証方式
 username = "use-token-auth"
+#トークンパスワード
+password = "4WDIW(38CgtWltpIlI" # 英数字18桁の「認証トークン」を指定します
 #組織ID
 organization = "ad0utv"     # 6桁の「組織ID」を指定します
 #デバイスタイプ
 deviceType = "thermostat" # 「デバイス・タイプ」として登録した値を指定します
 #デバイスID
 deviceSerial = "LivingRoomThermo1" # 「デバイスID」として登録した値を指定します
-#トークンパスワード
-password = "4WDIW(38CgtWltpIlI" # 英数字18桁の「認証トークン」を指定します
 #トピック
 topic = "iot-2/evt/update/fmt/json"
 #クライアントＩＤ
@@ -54,7 +54,8 @@ except Exception as e:
 mqttc.loop_start()
 
 #mqttc.loop()を定期的に実行することによって、接続先との接続を保持する。
-while mqttc.loop() == 0:
+while True:
+    mqttc.loop()
     result = instance.read()
 
     #温度センサーからデータを読み取れた場合
@@ -76,7 +77,7 @@ while mqttc.loop() == 0:
         except Exception as e:
             print "メッセージ送信に失敗しました。"
             print e
-        time.sleep(5)
+        time.sleep(3)
 
     else:
         print("センサーから温度と湿度を読み取ることができませんでした。")

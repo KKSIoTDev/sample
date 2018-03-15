@@ -3,7 +3,7 @@
 # ５秒に１度データを送信し、閾値を超えた値があれば在席していた旨の情報を送信する。
 #
 # 参考サイト
-# http://iinpht.jeez.jp/raspberrypi/raspberry-pi%E3%81%A7%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5%E3%83%BC%E3%82%92%E4%BD%BF%E3%81%86
+# https://qiita.com/shiraco/items/8c2587ae5a647b4f9803
 # http://kousen-tech.blogspot.jp/2016/10/raspberry-pi_30.html
 #
 
@@ -12,23 +12,32 @@ import time
 import paho.mqtt.client as mqtt
 import json
 import datetime
-import spidev
+import adConverter
 
 #圧力センサーで人がいると判断する条件
-threshold = 40
+threshold = 500
 
 #サーバーへの送信間隔（秒）
 sendInterval = 5
 
+# SPI通信するためのピン番号
+SPICLK = 11
+SPIMISO = 9
+SPIMOSI = 10
+SPICS = 8
+
 #初期処理
 def init():
-  #SPIデバイス
-  spi = spidev.SpiDev()
 
-  #SPIデバイスオープン
-  spi.open(0, 0)
+  # GPIOのピン番号を指定するモードの指定
+  GPIO.setmode(GPIO.BCM)
+  GPIO.setwarnings(False)
 
-  return spi
+  # SPI通信するためのピン番号を設定
+  GPIO.setup(SPIMOSI, GPIO.OUT)
+  GPIO.setup(SPIMISO, GPIO.IN)
+  GPIO.setup(SPICLK, GPIO.OUT)
+  GPIO.setup(SPICS, GPIO.OUT)
 
 # IoT Platformへの接続を確立
 # 戻り値：IoT Platformへのアクセスオブジェクト
@@ -66,8 +75,12 @@ def connect():
   return client
 
 #主処理
-def main(client,spi):
+def main(client):
   global threshold
+  global SPICLK
+  global SPIMOSI
+  global SPIMISO
+  global SPICS
 
   #前回送信時間
   #初回は必ず実行するために、前回送信日より１年前を指定。
@@ -78,29 +91,25 @@ def main(client,spi):
 
   #トピック
   topic = "iot-2/evt/eid/fmt/json"
-
   try:
-    while True:
 
+    while True:
       #１秒毎に計測する。
       time.sleep(1)
 
       #サーバーとの接続を確立し続けるために、実施する。
       client.loop()
 
-      #チャネル0の信号を取得する。
-      resp = spi.xfer2([0x68, 0x00])
+      #A/D変換した結果を取得する。
+      value = adConverter.readadc(0, SPICLK, SPIMOSI,SPIMISO, SPICS)
 
-      #チャネル0から値を取得する。
-      value = (resp[0] * 256 + resp[1]) & 0x3ff
+      print value
 
       #現在時刻
       currentDateTime = datetime.datetime.now()
 
       #前回送信時間と現在時刻の差分を取る。
       diffDateTime = currentDateTime - preSendDateTime
-
-      print value
 
       #重さが閾値以上の場合
       if value >= threshold:
@@ -120,14 +129,14 @@ def main(client,spi):
 
         #送信値を消灯にする。
         sendValue = 0
-  except KeyboardInterrupt:
-      #何も実行しない。
-      pass
+  except:
+      import traceback
+      traceback.print_exc()
 
 # 初期処理
-spi = init()
+init()
 # IoT PlatFormへの接続処理
 client = connect()
 # 主処理
-main(client,spi)
-GPIO.cleanup()
+main(client)
+#GPIO.cleanup()
