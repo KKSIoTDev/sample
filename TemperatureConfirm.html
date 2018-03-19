@@ -2,8 +2,11 @@
 <html>
 <head>
 	<title>Simple Meter</title>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="./reconnecting-websocket.min.js"></script>
+	
 	<script type="text/javascript">
-var wsUrl = 'ws://DHT11Test.mybluemix.net/ws/humanDetection';
+var wsUrl = 'ws://Temperature2018.mybluemix.net/ws/temperature';
 var socket;
 var temperatureData, humidityData;
 var temperatureOptions, humidityOptions;
@@ -76,8 +79,10 @@ function drawGauge() {
 	    <tr>
 	        <td>
         		<div id="temperatureGauge" style="height: 240px;"></div>
-		        <div id="humidityGauge" style="height: 240px;"></div>
     		</td>
+    		<td>
+		        <div id="humidityGauge" style="height: 240px;"></div>
+		    </td>  
 		</tr>
 	</table>
 </body>
